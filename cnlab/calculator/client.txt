@@ -1,0 +1,46 @@
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+
+int main() {
+    int sockfd;
+    char buffer[100], reply[100];
+    struct sockaddr_in server;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Connected to UDP Calculator server.\n");
+
+    while (1) {
+        printf("\nEnter command (operator num1 num2), or q to quit: ");
+        fgets(buffer, sizeof(buffer), stdin);
+        if (buffer[0] == 'q') {
+                sendto(sockfd, buffer, strlen(buffer), 0, (struct sockaddr *)&server, sizeof(server));
+                printf("Termination request sent to server.\n");
+                break;
+        }
+
+        sendto(sockfd, buffer, strlen(buffer), 0,
+               (struct sockaddr *)&server, sizeof(server));
+
+        printf("Command sent to server.\n");
+
+        int n = recvfrom(sockfd, reply, sizeof(reply) - 1, 0,
+                         NULL, NULL);
+        reply[n] = '\0';
+
+        printf("Server: %s\n", reply);
+    }
+
+    printf("Client terminated.\n");
+
+    close(sockfd);
+    return 0;
+}

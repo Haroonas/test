@@ -1,0 +1,39 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+
+int main() {
+    int sockfd, target, index;
+    struct sockaddr_in server;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    connect(sockfd, (struct sockaddr *)&server, sizeof(server));
+
+    printf("Connected to TCP Linear Search server.\n");
+
+    printf("Enter the number to search: ");
+    scanf("%d", &target);
+
+    send(sockfd, &target, sizeof(target), 0);
+
+    printf("Number sent to server.\n");
+
+    recv(sockfd, &index, sizeof(index), 0);
+
+    if (index == -1)
+        printf("Element not found (-1)\n");
+    else
+        printf("Element found at index %d\n", index);
+
+    printf("Client terminated.\n");
+
+    close(sockfd);
+    return 0;
+}
