@@ -1,0 +1,39 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 8080
+
+int main() {
+    int sockfd;
+    char buffer[100], reply[100];
+    struct sockaddr_in server;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(PORT);
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("UDP MAC Formatter client ready.\n");
+
+    printf("Enter 12-digit hex string : ");
+    scanf("%99s", buffer);
+
+    sendto(sockfd, buffer, strlen(buffer), 0,
+           (struct sockaddr *)&server, sizeof(server));
+
+    printf("MAC string sent to server.\n");
+
+    int n = recvfrom(sockfd, reply, sizeof(reply) - 1, 0,
+                     NULL, NULL);
+    reply[n] = '\0';
+
+    printf("MAC address: %s\n", reply);
+    printf("Client terminated.\n");
+
+    close(sockfd);
+    return 0;
+}
